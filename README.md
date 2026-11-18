@@ -41,6 +41,10 @@ See [developer documentation](docs/development/README.md) for builds, architectu
 and technical references. GLSwing is an external Maven dependency. Product changes
 are recorded separately in [release notes](docs/RELEASE-NOTES.md).
 
+Linux support is a developer-only port in this milestone. It builds the Java UI and
+native host against ALSA, but has no installer, package, official support or
+Windows-feature parity. The Windows build remains the released target.
+
 ## License
 
 EasyKnack is licensed under the [GNU GPL version 3 only](LICENSE)

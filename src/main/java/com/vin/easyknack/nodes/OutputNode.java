@@ -12,7 +12,8 @@ public final class OutputNode extends BasicNode {
         node.addInput(IN, "Audio In");
         node.addEditor(ENDPOINT, "Device", new EndpointEditor(com.vin.easyknack.audio.AudioEndpoint.DEFAULT)).keepVisibleOnHide();
         var endpoint=com.vin.easyknack.audio.AudioEndpoint.reference(state.text(ENDPOINT,com.vin.easyknack.audio.AudioEndpoint.DEFAULT.reference()));
-        boolean windows=endpoint.id().equals("default") || endpoint.id().startsWith("out:");
+        boolean windows=com.vin.easyknack.app.Platform.isWindows()
+                && (endpoint.id().equals("default") || endpoint.id().startsWith("out:"));
         node.addEditor(DEVICE_VOLUME,"Device volume",new DeviceVolumeEditor(endpoint.id())).visible(windows).keepVisibleOnHide();
         node.addEditor(VOLUME_KEYS,"Link volume keys",Editor.checkBox(false)).visible(windows);
         node.addEditor(LEVEL,"Signal",new OutputLevelEditor(endpoint.id())).visible(windows);

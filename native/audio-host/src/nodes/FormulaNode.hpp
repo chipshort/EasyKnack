@@ -7,6 +7,8 @@
 #include <array>
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <dlfcn.h>
 #endif
 namespace easyknack {
 struct FormulaNode : NodeProcessor {
@@ -22,6 +24,9 @@ struct FormulaNode : NodeProcessor {
 #ifdef _WIN32
         HMODULE handle=nullptr;
         ~Module(){if(handle)FreeLibrary(handle);}
+#else
+        void* handle=nullptr;
+        ~Module(){if(handle)dlclose(handle);}
 #endif
     };
     std::shared_ptr<Module> module;
@@ -66,6 +71,18 @@ struct FormulaNode : NodeProcessor {
                     loaded->sample=reinterpret_cast<Sample>(GetProcAddress(loaded->handle,"easyknack_formula_sample"));loaded->block=reinterpret_cast<Block>(GetProcAddress(loaded->handle,"easyknack_formula_block"));
                     if(abi&&abi()==6&&loaded->sample&&loaded->block)module=std::move(loaded);
                 }
+            }
+        }
+#else
+        if(path!="-"){
+            auto utf8=formulaUnhex(path);
+            auto loaded=std::make_shared<Module>();
+            loaded->handle=dlopen(utf8.c_str(),RTLD_NOW|RTLD_LOCAL);
+            if(loaded->handle){
+                auto abi=reinterpret_cast<unsigned(*)()>(dlsym(loaded->handle,"easyknack_formula_abi"));
+                loaded->sample=reinterpret_cast<Sample>(dlsym(loaded->handle,"easyknack_formula_sample"));
+                loaded->block=reinterpret_cast<Block>(dlsym(loaded->handle,"easyknack_formula_block"));
+                if(abi&&abi()==6&&loaded->sample&&loaded->block)module=std::move(loaded);
             }
         }
 #endif

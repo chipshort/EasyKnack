@@ -98,5 +98,22 @@
         </execution></executions>
       </plugin></plugins></build>
     </profile>
+    <profile>
+      <id>native-audio-linux</id>
+      <properties><audio.cxx>c++</audio.cxx></properties>
+      <build><plugins><plugin>
+        <groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId>
+        <executions><execution>
+          <id>build-audio-host-linux</id><phase>process-classes</phase><goals><goal>exec</goal></goals>
+          <configuration>
+            <executable>bash</executable>
+            <arguments>
+              <argument>${project.basedir}/scripts/build-audio-host.sh</argument>
+              <argument>--cxx</argument><argument>${audio.cxx}</argument>
+            </arguments>
+          </configuration>
+        </execution></executions>
+      </plugin></plugins></build>
+    </profile>
   </profiles>
 </project>

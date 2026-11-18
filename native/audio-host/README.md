@@ -1,9 +1,10 @@
 # EasyKnack Audiohost (v9)
 
-C++17 host, initially for Windows. The Windows backend uses miniaudio 0.11.21 for
-WASAPI hardware devices and ActivateAudioInterfaceAsync for process loopback.
-The Java UI communicates over authenticated loopback TCP.
-No GLSwing sources or Java runtime are linked into the host.
+C++17 host for Windows and, as a developer port, Linux. The Windows backend uses
+miniaudio 0.11.21 for WASAPI hardware devices and ActivateAudioInterfaceAsync for
+process loopback. The Linux backend uses miniaudio's ALSA backend. The Java UI
+communicates over authenticated loopback TCP. No GLSwing sources or Java runtime
+are linked into the host.
 
 ## Direct sample access
 
@@ -47,11 +48,12 @@ when a new graph has the same node ID. Topology changes are not crossfaded yet.
 Place each new processor header under `src/nodes` (subfolders work too), derive its
 class from `NodeProcessor`, and declare `EASYKNACK_NODE(MyNode, "my-node")` inside
 namespace `easyknack` at the end of the header. No host switch, enum or manual include
-list is needed. `scripts/generate-native-nodes.ps1` generates the factory and a
-`nodes.json` manifest. Duplicate IDs and malformed declarations fail the build.
-Optional `.cpp` files in the same node directory are discovered and compiled too.
-Both the PowerShell build and CMake invoke this generator. Keep helpers outside the
-registry by omitting the macro. A Java definition links its native ID and header
+list is needed. `scripts/generate-native-nodes.ps1` (Windows) or `scripts/generate-native-nodes.py`
+(POSIX) generates the factory and a `nodes.json` manifest. Duplicate IDs and
+malformed declarations fail the build. Optional `.cpp` files in the same node
+directory are discovered and compiled too. The PowerShell build and CMake invoke
+the PowerShell generator; the Linux build script uses the Python one. Keep helpers
+outside the registry by omitting the macro. A Java definition links its native ID and header
 through `NativeProcessor`; Maven tests verify that link.
 
 With LLVM-MinGW's `clang++` or MinGW `g++` on PATH, from the project root:
@@ -74,6 +76,44 @@ ctest --test-dir target/audio-cmake -C Release --output-on-failure
 For a CMake build point `-Deasyknack.audio.host=...` at the resulting executable.
 The portable compiler used during development is under `target/tools` only; it
 is not a source dependency or included in the distribution.
+
+### Linux (developer port)
+
+Linux is not packaged or officially supported yet. The minimal port targets ALSA
+playback and capture, normally directly or through `pipewire-alsa`. A system
+`libasound.so.2`, a C++17 compiler, Python 3 and Maven are required.
+
+```bash
+mvn process-classes
+./scripts/build-audio-host.sh --cxx g++ --test
+# or let Maven build the host after generating the parameter contracts:
+mvn -Pnative-audio-linux process-classes
+```
+
+The script writes `target/native/easyknack-audio-host` without an `.exe` suffix.
+Use `-Daudio.cxx=clang++` (or `--cxx`) to select a compiler. The build is not
+statically linked; use the distribution's runtime packages. The CMake project is
+Windows-oriented and is not part of the Linux path yet.
+
+`--null` selects miniaudio's null device and needs no audio hardware:
+
+```bash
+./target/native/easyknack-audio-host 0123456789abcdef --null
+```
+
+Accepted limitations of this milestone:
+
+- no system or application loopback capture,
+- no ASIO, application routing or virtual endpoints,
+- no device volume control or volume-key hook (`VOLUME` returns unavailable),
+- no hardware MIDI input; the on-screen keyboard still works,
+- WAV recording only (MP3 import works, MP3 recording is Windows-only),
+- no plugin or Bake source builds, no Linux installer or package.
+
+Device identity is the ALSA device name, for example `out:default` or
+`in:default`; the stable logical endpoints remain `default`. Saved explicit
+hardware IDs can need reselection after a device rename. Duplicate names receive
+`#2`, `#3`, ... suffixes. The protocol remains `READY 13` / `HELLO 13`.
 
 ## Execution and protocol
 

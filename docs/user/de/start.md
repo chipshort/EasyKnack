@@ -6,6 +6,8 @@ Installiere mit `EasyKnack-Setup-<Version>-x64.exe`; `EasyKnack.exe` startet das
 
 Das Setup prüft Java vor dem Kopieren der Programmdateien. Fehlt ein kompatibles JDK, kannst du seinen Ordner auswählen oder ausdrücklich eine externe JDK-Installation starten. Abbrechen beendet das Setup; Java bleibt separat installiert.
 
+Linux ist derzeit ein reiner Entwickler-Port und keine offizielle Veröffentlichung. Es gibt kein Linux-Setup und kein Paket; der Quellbau ist in der Entwicklerdokumentation beschrieben. System-/Anwendungsaufnahme, ASIO, Routing, Gerätelautstärke, Hardware-MIDI-Eingang, MP3-Aufnahme und Plugin-Builds fehlen dort noch.
+
 Wähle **Datei → Neu**, stelle am **Audio Output** dein Ausgabegerät und eine niedrige Lautstärke ein und starte Audio. Der Anfangsgraph verbindet einen Oscillator mit dem Ausgang. Für Mikrofon oder externe Signale verwende Audio Input.
 
 Füge Nodes über das Add-Menü hinzu. Ziehe vom Ausgang zum passenden Eingang; Warnungen erklären abgelehnte Verbindungen. Der Inspector zeigt die Einstellungen der Auswahl. **N** schaltet ihn um, **Strg+Umschalt+L** ordnet den aktuellen Graphen an. Menüs zeigen weitere Tastenkürzel. Ausblenden spart Platz, stoppt aber keine Berechnung.

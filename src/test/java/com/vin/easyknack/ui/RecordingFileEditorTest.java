@@ -43,12 +43,14 @@ class RecordingFileEditorTest {
    group.name.setText("Pending.mp3");var request=group.fileRequest();
    assertEquals(com.vingame.glswing.file.GLFileDialogMode.SAVE,request.mode());
    assertEquals(com.vingame.glswing.file.GLFileSelectionMode.FILES,request.selectionMode());
-   assertEquals(original.getParent(),request.initialDirectory());assertEquals("Pending.mp3",request.suggestedFileName());
+   boolean windows=com.vin.easyknack.app.Platform.isWindows();
+   assertEquals(original.getParent(),request.initialDirectory());
+   assertEquals(windows?"Pending.mp3":"Pending.wav",request.suggestedFileName());
    assertFalse(request.confirmOverwrite());
-   var selected=Path.of("target","other-recordings","Chosen.mp3").toAbsolutePath();group.selectFile(selected);
-   assertEquals("Chosen.mp3",group.name.getText());assertEquals(selected.toString(),values.get(0).toJavaValue());
+   var selected=Path.of("target","other-recordings",windows?"Chosen.mp3":"Chosen.wav").toAbsolutePath();group.selectFile(selected);
+   assertEquals(selected.getFileName().toString(),group.name.getText());assertEquals(selected.toString(),values.get(0).toJavaValue());
    group.name.setText("Renamed.mp3");group.commit();
-   assertEquals(selected.resolveSibling("Renamed.mp3").toString(),values.get(1).toJavaValue());
+   assertEquals(selected.resolveSibling(windows?"Renamed.mp3":"Renamed.wav").toString(),values.get(1).toJavaValue());
   });
  }
  @Test void newRecordersUseTheStandardRecordingFolder(){
@@ -56,7 +58,7 @@ class RecordingFileEditorTest {
  }
  @Test void namesKeepTheirFormatAndCannotContainPaths(){
   assertEquals("Take.wav",RecordingFileEditor.filename("Take"));
-  assertEquals("Take.MP3",RecordingFileEditor.filename("Take.MP3"));
+  assertEquals(com.vin.easyknack.app.Platform.isWindows()?"Take.MP3":"Take.wav",RecordingFileEditor.filename("Take.MP3"));
   assertEquals("Aufnahme ä.wav",RecordingFileEditor.filename("Aufnahme ä.wav"));
   for(String name:java.util.List.of("", "..", "a/b", "a\\b", "bad:name"))
    assertThrows(IllegalArgumentException.class,()->RecordingFileEditor.filename(name));

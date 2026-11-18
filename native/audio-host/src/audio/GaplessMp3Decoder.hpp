@@ -31,6 +31,15 @@ struct GaplessMp3Decoder {
     }
     static ma_result length(ma_data_source* source,ma_uint64* frames){*frames=drmp3_get_pcm_frame_count(&static_cast<GaplessMp3Decoder*>(source)->decoder);return MA_SUCCESS;}
     inline static const ma_data_source_vtable sourceTable{read,seek,format,cursor,length,nullptr,0};
+    static ma_result openFile(void*,const char* path,const ma_decoding_backend_config*,const ma_allocation_callbacks*,ma_data_source** output){
+        auto* self=new(std::nothrow) GaplessMp3Decoder;
+        if(!self)return MA_OUT_OF_MEMORY;
+        auto config=ma_data_source_config_init();config.vtable=&sourceTable;
+        auto result=ma_data_source_init(&config,&self->base);
+        if(result!=MA_SUCCESS){delete self;return result;}
+        if(!drmp3_init_file(&self->decoder,path,nullptr)){ma_data_source_uninit(&self->base);delete self;return MA_INVALID_FILE;}
+        *output=self;return MA_SUCCESS;
+    }
     static ma_result openWide(void*,const wchar_t* path,const ma_decoding_backend_config*,const ma_allocation_callbacks*,ma_data_source** output){
         auto* self=new(std::nothrow) GaplessMp3Decoder;
         if(!self)return MA_OUT_OF_MEMORY;
@@ -43,6 +52,6 @@ struct GaplessMp3Decoder {
     static void close(void*,ma_data_source* source,const ma_allocation_callbacks*){
         auto* self=static_cast<GaplessMp3Decoder*>(source);drmp3_uninit(&self->decoder);ma_data_source_uninit(&self->base);delete self;
     }
-    inline static ma_decoding_backend_vtable backend{nullptr,nullptr,openWide,nullptr,close};
+    inline static ma_decoding_backend_vtable backend{nullptr,openFile,openWide,nullptr,close};
 };
 }

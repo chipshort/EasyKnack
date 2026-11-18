@@ -37,7 +37,12 @@ inline void decodeAudioFile(const std::string& sourceHex, const std::string& out
     config.encodingFormat = extension == ".wav" ? ma_encoding_format_wav : ma_encoding_format_unknown;
     if(extension==".mp3"){config.ppCustomBackendVTables=mp3Backends;config.customBackendCount=1;}
     ma_decoder decoder{};
-    if (ma_decoder_init_file_w(source.c_str(), &config, &decoder) != MA_SUCCESS)
+#ifdef _WIN32
+    auto opened = ma_decoder_init_file_w(source.c_str(), &config, &decoder);
+#else
+    auto opened = ma_decoder_init_file(source.c_str(), &config, &decoder);
+#endif
+    if (opened != MA_SUCCESS)
         throw std::runtime_error("Cannot decode WAV/MP3 file (invalid, unsupported or unreadable audio)");
     struct Cleanup { ma_decoder* value; ~Cleanup() { ma_decoder_uninit(value); } } cleanup{&decoder};
     if(extension==".mp3"&&decoder.pBackendVTable!=&GaplessMp3Decoder::backend)throw std::runtime_error("Cannot decode MP3 with the gapless backend");

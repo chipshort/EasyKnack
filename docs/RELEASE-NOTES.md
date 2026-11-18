@@ -2,11 +2,25 @@
 
 ## Unreleased - 0.3.1
 
+- Add a developer-only Linux port of the Java UI and native host. Build the host
+  without PowerShell via `scripts/generate-native-nodes.py` and
+  `scripts/build-audio-host.sh`, with an optional `native-audio-linux` Maven
+  profile. Playback and capture use miniaudio's ALSA backend, the host keeps the
+  existing graph/DSP engine, WAV recording and import, and the on-screen MIDI
+  keyboard. Linux has no installer or package and is not officially supported.
+- Linux limitations: no system/application loopback capture, ASIO, application
+  routing, device volume or volume-key hook, hardware MIDI input, MP3 recording or
+  plugin/Bake source builds. WAV recording is the supported Linux format.
 - Auto-arrange example graphs and inner groups, centering their saved cameras.
 - Replace the bundled examples with sixteen self-contained learning projects covering
   basics, buffers, MIDI, Instance/Spectral/Formula Groups and delayed feedback.
 - Include German and English listening exercises; retire the earlier examples
   while preserving edited development copies in a hidden backup.
+
+Compatibility:
+
+- The host protocol remains version 13 and the `.knack` format is unchanged.
+- Windows keeps the WASAPI/ASIO backends, device volume and plugin builds.
 
 ## 0.3.0 - 2026-11-18
 

@@ -19,6 +19,10 @@ public record RecordingFileEditor() implements Editor {
   if(name.isEmpty()||name.equals(".")||name.equals("..")||name.matches(".*[\\\\/:*?\"<>|].*")||name.endsWith(".")||name.endsWith(" "))throw new IllegalArgumentException(AppText.text("recording.invalidName"));
   if(Path.of(name).isAbsolute()||Path.of(name).getNameCount()!=1)throw new IllegalArgumentException(AppText.text("recording.invalidName"));
   var lower=name.toLowerCase(java.util.Locale.ROOT);
+  if(!com.vin.easyknack.app.Platform.isWindows()){
+   if(lower.endsWith(".mp3"))return name.substring(0,name.length()-4)+".wav";
+   return lower.endsWith(".wav")?name:name+".wav";
+  }
   return lower.endsWith(".wav")||lower.endsWith(".mp3")?name:name+".wav";
  }
  private static final class Icon {static final GLIcon FOLDER=GLIcon.fromSvgResource("/com/vingame/glswing/icons/filedialog_folder.svg");}
@@ -53,8 +57,10 @@ public record RecordingFileEditor() implements Editor {
    String suggested;
    try{suggested=filename(name.getText());}catch(IllegalArgumentException invalid){suggested="Recording.wav";}
    // Only select a future recording target; collision handling belongs to the recorder.
-   return GLFileDialogRequest.save().title(AppText.text("recording.browse")).initialDirectory(directory)
-    .suggestedFileName(suggested).filter("WAV / MP3","wav","mp3").confirmOverwrite(false).build();
+   var request=GLFileDialogRequest.save().title(AppText.text("recording.browse")).initialDirectory(directory)
+    .suggestedFileName(suggested).confirmOverwrite(false);
+   if(com.vin.easyknack.app.Platform.isWindows())request.filter("WAV / MP3","wav","mp3");else request.filter("WAV","wav");
+   return request.build();
   }
   void selectFile(Path selected){
    var path=selected.toAbsolutePath();directory=path.getParent();name.setText(path.getFileName().toString());commit();

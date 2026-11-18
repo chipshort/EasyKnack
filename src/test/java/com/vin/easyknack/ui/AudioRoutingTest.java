@@ -149,7 +149,8 @@ class AudioRoutingTest {
                         .getContents().stream().filter(GLComboBox.class::isInstance).findFirst().orElseThrow();
                 assertTrue(chooser.get().getSelectedItem().toString().contains("unavailable"));
                 AudioEndpoints.publish(new AudioEndpoints.Snapshot(previous.capabilities(), List.of(device, AudioEndpoint.DEFAULT)));
-                assertEquals("[WASAPI] USB Interface", chooser.get().getSelectedItem().toString());
+                assertEquals("[" + (com.vin.easyknack.app.Platform.isWindows() ? "WASAPI" : "ALSA") + "] USB Interface",
+                        chooser.get().getSelectedItem().toString());
                 assertEquals(saved, controller.snapshotDocument(), "Discovery must not dirty the document");
                 AudioEndpoints.publish(new AudioEndpoints.Snapshot(previous.capabilities(), List.of(AudioEndpoint.DEFAULT)));
                 assertTrue(chooser.get().getSelectedItem().toString().contains("unavailable"));
